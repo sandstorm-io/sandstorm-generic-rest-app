@@ -54,7 +54,10 @@ if (Meteor.isServer) {
             // TODO(soon); look at url.query.timestamp
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end(JSON.stringify(MongoData.find({path: req.url}).map(function (row) {
-              return row.data;
+              var ret = row.data;
+              ret["_jd_timestamp"] = row.timestamp;
+              ret["_jd_id"] = row._id;
+              return ret;
             })));
           } else {
             res.writeHead(404, { "Content-Type": "text/plain" });
