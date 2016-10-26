@@ -31,6 +31,7 @@ if (Meteor.isServer) {
               res.end("You do not have permission to POST.");
               return;
             }
+            var ip = req.headers["x-real-ip"];
             var fut = new Future();
             var bufs = [];
             req.on("data", function (d) { bufs.push(d); });
@@ -41,7 +42,7 @@ if (Meteor.isServer) {
             });
             var data = fut.wait();
             // Assume data to be text/plain or json
-            MongoData.insert({path: req.url, timestamp: new Date(), data: JSON.parse(data.toString())});
+            MongoData.insert({path: req.url, ip: ip, timestamp: new Date(), data: JSON.parse(data.toString())});
             res.writeHead(200, { "Content-Type": "text/plain" });
             res.end();
           } else if (req.method === "GET") {
@@ -57,6 +58,9 @@ if (Meteor.isServer) {
               var ret = row.data;
               ret["_jd_timestamp"] = row.timestamp;
               ret["_jd_id"] = row._id;
+              if (row.ip) {
+                ret["_jd_ip"] = row.ip;
+              }
               return ret;
             })));
           } else {
